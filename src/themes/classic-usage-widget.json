@@ -19,7 +19,7 @@
         "offset_x": 0,
         "offset_y": 0
       },
-      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28",
+      "width": "42 + providers.count * (ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62) + max(0, providers.count - 1) * 3 + (providers.opencode.enabled + providers.cursor.enabled) * 28 + providers.claude.enabled * 58",
       "height": "46",
       "mouse_events": {
         "right_click": "show_context_menu(\"classic-v1\")"
@@ -425,7 +425,7 @@
           "name": "Claude Code provider",
           "render": "providers.claude.enabled",
           "parent": "provider-row",
-          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 62",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4 + 120",
           "height": "46"
         },
         {
@@ -453,9 +453,9 @@
           }
         },
         {
-          "id": "claude-session-pace-under-dark",
-          "name": "dark 5-hour pace overlay (under pace \u2014 green)",
-          "render": "system.dark && claude.session.elapsed_fraction > 0.1 && claude.session.pace_delta < -5",
+          "id": "claude-session-pace-green-dark",
+          "name": "dark 5-hour pace overlay (green — under pace)",
+          "render": "system.dark && claude.session.pace_delta < 0",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -477,9 +477,57 @@
           }
         },
         {
-          "id": "claude-session-pace-over-dark",
-          "name": "dark 5-hour pace overlay (over pace \u2014 red)",
-          "render": "system.dark && claude.session.elapsed_fraction > 0.1 && claude.session.pace_delta > 10",
+          "id": "claude-session-pace-yellow-dark",
+          "name": "dark 5-hour pace overlay (yellow — on pace)",
+          "render": "system.dark && claude.session.pace_delta >= 0 && claude.session.pace_delta < 15",
+          "parent": "claude-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.session.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FFC107FF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-session-pace-orange-dark",
+          "name": "dark 5-hour pace overlay (orange — over pace)",
+          "render": "system.dark && claude.session.pace_delta >= 15 && claude.session.pace_delta < 30",
+          "parent": "claude-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.session.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FF9800FF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-session-pace-red-dark",
+          "name": "dark 5-hour pace overlay (red — way over pace)",
+          "render": "system.dark && claude.session.pace_delta >= 30",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -498,29 +546,6 @@
             "segments": 10,
             "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
-          }
-        },
-        {
-          "id": "claude-session-value-dark",
-          "name": "dark Claude Code 5-hour value",
-          "render": "system.dark && claude.session.elapsed_fraction <= 0.1",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "5",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{claude.session:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F09A7AFF"
-            }
           }
         },
         {
@@ -548,9 +573,9 @@
           }
         },
         {
-          "id": "claude-session-pace-under-light",
-          "name": "light 5-hour pace overlay (under pace \u2014 green)",
-          "render": "(1 - system.dark) && claude.session.elapsed_fraction > 0.1 && claude.session.pace_delta < -5",
+          "id": "claude-session-pace-green-light",
+          "name": "light 5-hour pace overlay (green — under pace)",
+          "render": "(1 - system.dark) && claude.session.pace_delta < 0",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -572,9 +597,57 @@
           }
         },
         {
-          "id": "claude-session-pace-over-light",
-          "name": "light 5-hour pace overlay (over pace \u2014 red)",
-          "render": "(1 - system.dark) && claude.session.elapsed_fraction > 0.1 && claude.session.pace_delta > 10",
+          "id": "claude-session-pace-yellow-light",
+          "name": "light 5-hour pace overlay (yellow — on pace)",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= 0 && claude.session.pace_delta < 15",
+          "parent": "claude-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.session.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FFC107FF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-session-pace-orange-light",
+          "name": "light 5-hour pace overlay (orange — over pace)",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= 15 && claude.session.pace_delta < 30",
+          "parent": "claude-provider",
+          "y": "5",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.session.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FF9800FF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-session-pace-red-light",
+          "name": "light 5-hour pace overlay (red — way over pace)",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= 30",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -593,29 +666,6 @@
             "segments": 10,
             "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
-          }
-        },
-        {
-          "id": "claude-session-value-light",
-          "name": "light Claude Code 5-hour value",
-          "render": "(1 - system.dark) && claude.session.elapsed_fraction <= 0.1",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "5",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{claude.session:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#A94F32FF"
-            }
           }
         },
         {
@@ -643,9 +693,9 @@
           }
         },
         {
-          "id": "claude-weekly-pace-under-dark",
-          "name": "dark 7-day pace overlay (under pace \u2014 green)",
-          "render": "system.dark && claude.weekly.elapsed_fraction > 0.1 && claude.weekly.pace_delta < -5",
+          "id": "claude-weekly-pace-green-dark",
+          "name": "dark 7-day pace overlay (green — under pace)",
+          "render": "system.dark && claude.weekly.pace_delta < 0",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -667,9 +717,57 @@
           }
         },
         {
-          "id": "claude-weekly-pace-over-dark",
-          "name": "dark 7-day pace overlay (over pace \u2014 red)",
-          "render": "system.dark && claude.weekly.elapsed_fraction > 0.1 && claude.weekly.pace_delta > 10",
+          "id": "claude-weekly-pace-yellow-dark",
+          "name": "dark 7-day pace overlay (yellow — on pace)",
+          "render": "system.dark && claude.weekly.pace_delta >= 0 && claude.weekly.pace_delta < 15",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.weekly.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FFC107FF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-orange-dark",
+          "name": "dark 7-day pace overlay (orange — over pace)",
+          "render": "system.dark && claude.weekly.pace_delta >= 15 && claude.weekly.pace_delta < 30",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.weekly.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FF9800FF"
+            },
+            "track": {
+              "color": "#444444FF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-red-dark",
+          "name": "dark 7-day pace overlay (red — way over pace)",
+          "render": "system.dark && claude.weekly.pace_delta >= 30",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -688,29 +786,6 @@
             "segments": 10,
             "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
-          }
-        },
-        {
-          "id": "claude-weekly-value-dark",
-          "name": "dark Claude Code 7-day value",
-          "render": "(system.dark) && !claude.credits.available && claude.weekly.elapsed_fraction <= 0.1",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{claude.weekly:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#F09A7AFF"
-            }
           }
         },
         {
@@ -738,9 +813,9 @@
           }
         },
         {
-          "id": "claude-weekly-pace-under-light",
-          "name": "light 7-day pace overlay (under pace \u2014 green)",
-          "render": "(1 - system.dark) && claude.weekly.elapsed_fraction > 0.1 && claude.weekly.pace_delta < -5",
+          "id": "claude-weekly-pace-green-light",
+          "name": "light 7-day pace overlay (green — under pace)",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta < 0",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -762,9 +837,57 @@
           }
         },
         {
-          "id": "claude-weekly-pace-over-light",
-          "name": "light 7-day pace overlay (over pace \u2014 red)",
-          "render": "(1 - system.dark) && claude.weekly.elapsed_fraction > 0.1 && claude.weekly.pace_delta > 10",
+          "id": "claude-weekly-pace-yellow-light",
+          "name": "light 7-day pace overlay (yellow — on pace)",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 0 && claude.weekly.pace_delta < 15",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.weekly.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FFC107FF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-orange-light",
+          "name": "light 7-day pace overlay (orange — over pace)",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 15 && claude.weekly.pace_delta < 30",
+          "parent": "claude-provider",
+          "y": "28",
+          "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
+          "height": "13",
+          "content": {
+            "type": "progress",
+            "value": "claude.weekly.percentage",
+            "direction": "left_to_right",
+            "fill": {
+              "color": "#FF9800FF"
+            },
+            "track": {
+              "color": "#AAAAAAFF"
+            },
+            "corner_radius": "2",
+            "segments": 10,
+            "segments_expression": "ceil(10 / max(1, providers.count))",
+            "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-red-light",
+          "name": "light 7-day pace overlay (red — way over pace)",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 30",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -786,40 +909,17 @@
           }
         },
         {
-          "id": "claude-weekly-value-light",
-          "name": "light Claude Code 7-day value",
-          "render": "(1 - system.dark) && !claude.credits.available && claude.weekly.elapsed_fraction <= 0.1",
-          "parent": "claude-provider",
-          "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
-          "y": "28",
-          "width": "62",
-          "height": "13",
-          "content": {
-            "type": "text",
-            "template": "{claude.weekly:usage_line}",
-            "font_family": "Segoe UI",
-            "font_size": "12",
-            "weight": "medium",
-            "rendering": "clear_type",
-            "contrast": "1",
-            "align": "left",
-            "color": {
-              "color": "#A94F32FF"
-            }
-          }
-        },
-        {
           "id": "claude-session-pace-text-dark",
           "name": "dark 5-hour pace delta text",
-          "render": "system.dark && claude.session.elapsed_fraction > 0.1",
+          "render": "system.dark",
           "parent": "claude-provider",
           "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "120",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.session:usage_badge} {claude.session.pace_delta:signed}",
+            "template": "{claude.session:usage_badge} ({claude.session.pace_delta:signed}) {claude.session.reset.seconds:duration_short}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -834,15 +934,15 @@
         {
           "id": "claude-session-pace-text-light",
           "name": "light 5-hour pace delta text",
-          "render": "(1 - system.dark) && claude.session.elapsed_fraction > 0.1",
+          "render": "(1 - system.dark)",
           "parent": "claude-provider",
           "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "5",
-          "width": "62",
+          "width": "120",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.session:usage_badge} {claude.session.pace_delta:signed}",
+            "template": "{claude.session:usage_badge} ({claude.session.pace_delta:signed}) {claude.session.reset.seconds:duration_short}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -857,15 +957,15 @@
         {
           "id": "claude-weekly-pace-text-dark",
           "name": "dark 7-day pace delta text",
-          "render": "(system.dark) && !claude.credits.available && claude.weekly.elapsed_fraction > 0.1",
+          "render": "(system.dark) && !claude.credits.available",
           "parent": "claude-provider",
           "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "120",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.weekly:usage_badge} {claude.weekly.pace_delta:signed}",
+            "template": "{claude.weekly:usage_badge} ({claude.weekly.pace_delta:signed}) {claude.weekly.reset.seconds:duration_short}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
@@ -880,15 +980,15 @@
         {
           "id": "claude-weekly-pace-text-light",
           "name": "light 7-day pace delta text",
-          "render": "(1 - system.dark) && !claude.credits.available && claude.weekly.elapsed_fraction > 0.1",
+          "render": "(1 - system.dark) && !claude.credits.available",
           "parent": "claude-provider",
           "x": "ceil(10 / max(1, providers.count)) * 11 - 1 + 4",
           "y": "28",
-          "width": "62",
+          "width": "120",
           "height": "13",
           "content": {
             "type": "text",
-            "template": "{claude.weekly:usage_badge} {claude.weekly.pace_delta:signed}",
+            "template": "{claude.weekly:usage_badge} ({claude.weekly.pace_delta:signed}) {claude.weekly.reset.seconds:duration_short}",
             "font_family": "Segoe UI",
             "font_size": "12",
             "weight": "medium",
