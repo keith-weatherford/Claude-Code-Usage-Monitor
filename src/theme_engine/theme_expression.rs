@@ -594,6 +594,16 @@ pub(super) fn format_value(value: f64, format: &str, context: &DataContext) -> S
     if format.eq_ignore_ascii_case("percent") {
         return format!("{value:.0}%");
     }
+    // Signed integer — shows "+12" for positive, "-5" for negative, "0" for zero.
+    // Use in pace-delta text: "{claude.session.pace_delta:signed}%"
+    if format.eq_ignore_ascii_case("signed") {
+        let rounded = value.round() as i64;
+        return if rounded > 0 {
+            format!("+{rounded}")
+        } else {
+            format!("{rounded}")
+        };
+    }
     let decimals = format
         .split('.')
         .nth(1)
