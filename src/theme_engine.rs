@@ -1493,6 +1493,46 @@ impl DataContext {
             self.insert(&format!("{name}.{window}.reset.hours"), seconds / 3600.0);
             self.insert(&format!("{name}.{window}.reset.days"), seconds / 86400.0);
         }
+
+        // ── Pace tracking ──────────────────────────────────────────────
+        // How fast usage is being consumed relative to time elapsed in
+        // the window.
+        //   elapsed_fraction : 0→1, how far through the window we are
+        //   expected_percentage : what % usage would be if perfectly even
+        //   pace              : ratio (1.0 = on track, >1 = ahead, <1 = under)
+        //   pace_delta        : percentage points above/below expected
+        //                       positive = consuming faster than sustainable
+        const FIVE_HOUR_SECS: f64 = 5.0 * 3600.0;
+        const SEVEN_DAY_SECS: f64 = 7.0 * 86400.0;
+        const THIRTY_DAY_SECS: f64 = 30.0 * 86400.0;
+
+        let monthly_pct = monthly.map(|m| m.percentage).unwrap_or(0.0);
+        let session_total = if use_codex_session_fallback {
+            SEVEN_DAY_SECS
+        } else {
+            FIVE_HOUR_SECS
+        };
+        for (window, total_secs, secs_left, pct) in [
+            ("session", session_total, session_seconds, session),
+            ("five_hour", FIVE_HOUR_SECS, five_hour_seconds, five_hour),
+            ("weekly", SEVEN_DAY_SECS, weekly_seconds, weekly),
+            ("monthly", THIRTY_DAY_SECS, monthly_seconds, monthly_pct),
+        ] {
+            let elapsed = (1.0 - (secs_left / total_secs)).clamp(0.0, 1.0);
+            let expected = elapsed * 100.0;
+            let delta = pct - expected;
+            // Avoid wild swings when almost no time has elapsed.
+            let pace = if elapsed > 0.01 {
+                pct / (elapsed * 100.0)
+            } else {
+                0.0
+            };
+
+            self.insert(&format!("{name}.{window}.elapsed_fraction"), elapsed);
+            self.insert(&format!("{name}.{window}.expected_percentage"), expected);
+            self.insert(&format!("{name}.{window}.pace"), pace);
+            self.insert(&format!("{name}.{window}.pace_delta"), delta);
+        }
     }
 
     pub fn insert(&mut self, name: &str, value: f64) {
