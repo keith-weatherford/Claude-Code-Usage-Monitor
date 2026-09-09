@@ -1496,7 +1496,7 @@ impl DataContext {
             );
         } else {
             for descriptor in PROVIDER_DESCRIPTORS {
-                context.insert_provider(descriptor.key, None, descriptor.id == ProviderId::Codex);
+                context.insert_provider(descriptor.key, None, descriptor.id == ProviderId::Codex, &runtime);
             }
             context.insert_provider("active", None, false, &runtime);
         }
