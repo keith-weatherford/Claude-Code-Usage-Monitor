@@ -1827,6 +1827,11 @@ pub fn run() {
                 pace_yellow_threshold: settings.pace_yellow_threshold,
                 pace_orange_threshold: settings.pace_orange_threshold,
                 pace_red_threshold: settings.pace_red_threshold,
+                work_hours_enabled: settings.work_hours_enabled,
+                work_hour_start: settings.work_hour_start,
+                work_hour_end: settings.work_hour_end,
+                non_work_weight: settings.non_work_weight,
+                weekend_weight: settings.weekend_weight,
             });
         }
 
@@ -2350,6 +2355,14 @@ fn reload_external_settings(hwnd: HWND) {
         state.poll_interval_ms = settings.poll_interval_ms;
         state.providers = settings.enabled_providers();
         state.taskbar_index = settings.taskbar_index;
+        state.pace_yellow_threshold = settings.pace_yellow_threshold;
+        state.pace_orange_threshold = settings.pace_orange_threshold;
+        state.pace_red_threshold = settings.pace_red_threshold;
+        state.work_hours_enabled = settings.work_hours_enabled;
+        state.work_hour_start = settings.work_hour_start;
+        state.work_hour_end = settings.work_hour_end;
+        state.non_work_weight = settings.non_work_weight;
+        state.weekend_weight = settings.weekend_weight;
         apply_language_to_state(state, language_override);
     }
     unsafe {
