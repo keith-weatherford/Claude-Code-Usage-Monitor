@@ -1203,6 +1203,11 @@ pub struct ThemeRuntime {
     pub pace_yellow: f64,
     pub pace_orange: f64,
     pub pace_red: f64,
+    pub work_hours_enabled: bool,
+    pub work_hour_start: u8,
+    pub work_hour_end: u8,
+    pub non_work_weight: f64,
+    pub weekend_weight: f64,
 }
 
 impl Default for ThemeRuntime {
@@ -1217,6 +1222,11 @@ impl Default for ThemeRuntime {
             pace_yellow: 0.0,
             pace_orange: 15.0,
             pace_red: 30.0,
+            work_hours_enabled: false,
+            work_hour_start: 7,
+            work_hour_end: 19,
+            non_work_weight: 1.0,
+            weekend_weight: 1.0,
         }
     }
 }
@@ -1247,6 +1257,11 @@ impl ThemeRuntime {
             pace_yellow: 0.0,
             pace_orange: 15.0,
             pace_red: 30.0,
+            work_hours_enabled: false,
+            work_hour_start: 7,
+            work_hour_end: 19,
+            non_work_weight: 1.0,
+            weekend_weight: 1.0,
         }
     }
 
@@ -1268,6 +1283,22 @@ impl ThemeRuntime {
         self
     }
 
+    pub fn with_pacing_schedule(
+        mut self,
+        enabled: bool,
+        start: u8,
+        end: u8,
+        non_work: f64,
+        weekend: f64,
+    ) -> Self {
+        self.work_hours_enabled = enabled;
+        self.work_hour_start = start;
+        self.work_hour_end = end;
+        self.non_work_weight = non_work;
+        self.weekend_weight = weekend;
+        self
+    }
+
     /// Supply the selected native host's 96-DPI logical dimensions. Theme
     /// expressions consume these as `host.width` and `host.height`.
     pub fn with_host_dimensions(mut self, width: u32, height: u32) -> Self {
@@ -1283,6 +1314,81 @@ impl ThemeRuntime {
     pub fn provider_enabled(self, provider: ProviderId) -> bool {
         self.providers.contains(provider)
     }
+}
+
+/// Returns the weight for the hour containing the given unix timestamp,
+/// based on local time weekday and hour. Saturday and Sunday hours are
+/// multiplied by `weekend_weight`. When work hours are enabled, hours
+/// outside the \[start, end) range are additionally multiplied by
+/// `non_work_weight`. The two factors stack.
+fn get_hour_weight(unix: f64, runtime: &ThemeRuntime) -> f64 {
+    let Some(parts) = timestamp_parts(unix, true) else {
+        return 1.0;
+    };
+    let mut weight = 1.0;
+    // weekday: Monday=0 … Saturday=5, Sunday=6
+    if parts.weekday >= 5 {
+        weight = runtime.weekend_weight;
+    }
+    if runtime.work_hours_enabled {
+        let hour = parts.hour as u8;
+        let in_work_hours = if runtime.work_hour_start < runtime.work_hour_end {
+            hour >= runtime.work_hour_start && hour < runtime.work_hour_end
+        } else if runtime.work_hour_start > runtime.work_hour_end {
+            // Wraps midnight, e.g. 22–06.
+            hour >= runtime.work_hour_start || hour < runtime.work_hour_end
+        } else {
+            // start == end: every hour is off-hours.
+            false
+        };
+        if !in_work_hours {
+            weight *= runtime.non_work_weight;
+        }
+    }
+    weight
+}
+
+/// Computes a time-weighted elapsed fraction for pace tracking. Walks
+/// hour-by-hour from the window start to the window end, weighting each
+/// hour by [`get_hour_weight`]. Returns `(weighted_elapsed /
+/// weighted_total).clamp(0, 1)`.
+fn weighted_elapsed_fraction(
+    reset_unix: f64,
+    total_secs: f64,
+    secs_left: f64,
+    runtime: &ThemeRuntime,
+) -> f64 {
+    if total_secs <= 0.0 {
+        return 0.0;
+    }
+    let start_unix = reset_unix - total_secs;
+    let now_unix = reset_unix - secs_left;
+    let total_hours = (total_secs / 3600.0).ceil() as u64;
+    let mut weighted_elapsed = 0.0_f64;
+    let mut weighted_total = 0.0_f64;
+
+    for i in 0..total_hours {
+        let hour_start = start_unix + (i as f64 * 3600.0);
+        let hour_end = (hour_start + 3600.0).min(reset_unix);
+        let hour_duration = hour_end - hour_start;
+        let weight = get_hour_weight(hour_start, runtime);
+        let weighted_duration = hour_duration * weight;
+        weighted_total += weighted_duration;
+
+        if now_unix >= hour_end {
+            // Entire hour has elapsed.
+            weighted_elapsed += weighted_duration;
+        } else if now_unix > hour_start {
+            // Partial hour — proportional share.
+            let fraction = (now_unix - hour_start) / hour_duration;
+            weighted_elapsed += weighted_duration * fraction;
+        }
+    }
+
+    if weighted_total <= 0.0 {
+        return 0.0;
+    }
+    (weighted_elapsed / weighted_total).clamp(0.0, 1.0)
 }
 
 impl DataContext {
@@ -1335,6 +1441,14 @@ impl DataContext {
         context.insert("settings.pace_yellow", runtime.pace_yellow);
         context.insert("settings.pace_orange", runtime.pace_orange);
         context.insert("settings.pace_red", runtime.pace_red);
+        context.insert(
+            "settings.work_hours_enabled",
+            runtime.work_hours_enabled as u8 as f64,
+        );
+        context.insert("settings.work_hour_start", runtime.work_hour_start as f64);
+        context.insert("settings.work_hour_end", runtime.work_hour_end as f64);
+        context.insert("settings.non_work_weight", runtime.non_work_weight);
+        context.insert("settings.weekend_weight", runtime.weekend_weight);
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|value| value.as_secs_f64())
@@ -1368,6 +1482,7 @@ impl DataContext {
                     descriptor.key,
                     data.get(descriptor.id),
                     descriptor.id == ProviderId::Codex,
+                    &runtime,
                 );
             }
             let active = ProviderId::ALL
@@ -1377,12 +1492,13 @@ impl DataContext {
                 "active",
                 active.map(|(_, usage)| usage),
                 active.is_some_and(|(provider, _)| provider == ProviderId::Codex),
+                &runtime,
             );
         } else {
             for descriptor in PROVIDER_DESCRIPTORS {
                 context.insert_provider(descriptor.key, None, descriptor.id == ProviderId::Codex);
             }
-            context.insert_provider("active", None, false);
+            context.insert_provider("active", None, false, &runtime);
         }
         context
     }
@@ -1392,6 +1508,7 @@ impl DataContext {
         name: &str,
         usage: Option<&crate::models::UsageData>,
         codex_compatibility: bool,
+        runtime: &ThemeRuntime,
     ) {
         let weekly_label = usage
             .and_then(|usage| usage.weekly_label.as_deref())
@@ -1531,13 +1648,21 @@ impl DataContext {
         } else {
             FIVE_HOUR_SECS
         };
-        for (window, total_secs, secs_left, pct) in [
-            ("session", session_total, session_seconds, session),
-            ("five_hour", FIVE_HOUR_SECS, five_hour_seconds, five_hour),
-            ("weekly", SEVEN_DAY_SECS, weekly_seconds, weekly),
-            ("monthly", THIRTY_DAY_SECS, monthly_seconds, monthly_pct),
+        let use_weighted = runtime.weekend_weight != 1.0 || runtime.work_hours_enabled;
+        for (window, total_secs, reset_unix, secs_left, pct) in [
+            ("session", session_total, session_unix, session_seconds, session),
+            ("five_hour", FIVE_HOUR_SECS, five_hour_unix, five_hour_seconds, five_hour),
+            ("weekly", SEVEN_DAY_SECS, weekly_unix, weekly_seconds, weekly),
+            ("monthly", THIRTY_DAY_SECS, monthly_unix, monthly_seconds, monthly_pct),
         ] {
-            let elapsed = (1.0 - (secs_left / total_secs)).clamp(0.0, 1.0);
+            let elapsed = if use_weighted
+                && (window == "weekly" || window == "monthly")
+                && reset_unix > 0.0
+            {
+                weighted_elapsed_fraction(reset_unix, total_secs, secs_left, runtime)
+            } else {
+                (1.0 - (secs_left / total_secs)).clamp(0.0, 1.0)
+            };
             let expected = elapsed * 100.0;
             let delta = pct - expected;
             // Avoid wild swings when almost no time has elapsed.
