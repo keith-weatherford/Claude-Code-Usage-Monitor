@@ -127,6 +127,11 @@ struct AppState {
     pace_yellow_threshold: f64,
     pace_orange_threshold: f64,
     pace_red_threshold: f64,
+    work_hours_enabled: bool,
+    work_hour_start: u8,
+    work_hour_end: u8,
+    non_work_weight: f64,
+    weekend_weight: f64,
 }
 
 #[derive(Clone, Debug)]
