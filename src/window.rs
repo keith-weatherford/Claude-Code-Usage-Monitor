@@ -124,6 +124,9 @@ struct AppState {
     hovered_mouse_layer: Option<(usize, String)>,
     pending_mouse_click: Option<PendingMouseClick>,
     suppress_next_left_up: bool,
+    pace_yellow_threshold: f64,
+    pace_orange_threshold: f64,
+    pace_red_threshold: f64,
 }
 
 #[derive(Clone, Debug)]
@@ -458,6 +461,11 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
     ThemeRuntime::from_providers(state.providers)
         .with_poll_state(poll_ok, has_error)
         .with_language(state.language)
+        .with_pace_thresholds(
+            state.pace_yellow_threshold,
+            state.pace_orange_threshold,
+            state.pace_red_threshold,
+        )
 }
 
 /// A transient outage can keep presenting the last real reading while its
@@ -1816,6 +1824,9 @@ pub fn run() {
                 hovered_mouse_layer: None,
                 pending_mouse_click: None,
                 suppress_next_left_up: false,
+                pace_yellow_threshold: settings.pace_yellow_threshold,
+                pace_orange_threshold: settings.pace_orange_threshold,
+                pace_red_threshold: settings.pace_red_threshold,
             });
         }
 
