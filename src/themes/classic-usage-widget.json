@@ -455,7 +455,7 @@
         {
           "id": "claude-session-pace-green-dark",
           "name": "dark 5-hour pace overlay (green — under pace)",
-          "render": "system.dark && claude.session.pace_delta < 0",
+          "render": "system.dark && claude.session.pace_delta < settings.pace_yellow",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -479,7 +479,7 @@
         {
           "id": "claude-session-pace-yellow-dark",
           "name": "dark 5-hour pace overlay (yellow — on pace)",
-          "render": "system.dark && claude.session.pace_delta >= 0 && claude.session.pace_delta < 15",
+          "render": "system.dark && claude.session.pace_delta >= settings.pace_yellow && claude.session.pace_delta < settings.pace_orange",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -503,7 +503,7 @@
         {
           "id": "claude-session-pace-orange-dark",
           "name": "dark 5-hour pace overlay (orange — over pace)",
-          "render": "system.dark && claude.session.pace_delta >= 15 && claude.session.pace_delta < 30",
+          "render": "system.dark && claude.session.pace_delta >= settings.pace_orange && claude.session.pace_delta < settings.pace_red",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -527,7 +527,7 @@
         {
           "id": "claude-session-pace-red-dark",
           "name": "dark 5-hour pace overlay (red — way over pace)",
-          "render": "system.dark && claude.session.pace_delta >= 30",
+          "render": "system.dark && claude.session.pace_delta >= settings.pace_red",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -575,7 +575,7 @@
         {
           "id": "claude-session-pace-green-light",
           "name": "light 5-hour pace overlay (green — under pace)",
-          "render": "(1 - system.dark) && claude.session.pace_delta < 0",
+          "render": "(1 - system.dark) && claude.session.pace_delta < settings.pace_yellow",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -599,7 +599,7 @@
         {
           "id": "claude-session-pace-yellow-light",
           "name": "light 5-hour pace overlay (yellow — on pace)",
-          "render": "(1 - system.dark) && claude.session.pace_delta >= 0 && claude.session.pace_delta < 15",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= settings.pace_yellow && claude.session.pace_delta < settings.pace_orange",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -623,7 +623,7 @@
         {
           "id": "claude-session-pace-orange-light",
           "name": "light 5-hour pace overlay (orange — over pace)",
-          "render": "(1 - system.dark) && claude.session.pace_delta >= 15 && claude.session.pace_delta < 30",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= settings.pace_orange && claude.session.pace_delta < settings.pace_red",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -647,7 +647,7 @@
         {
           "id": "claude-session-pace-red-light",
           "name": "light 5-hour pace overlay (red — way over pace)",
-          "render": "(1 - system.dark) && claude.session.pace_delta >= 30",
+          "render": "(1 - system.dark) && claude.session.pace_delta >= settings.pace_red",
           "parent": "claude-provider",
           "y": "5",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -666,6 +666,34 @@
             "segments": 10,
             "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-session-pace-marker-dark",
+          "name": "dark 5-hour pace marker (elapsed position)",
+          "render": "system.dark",
+          "parent": "claude-provider",
+          "x": "floor(claude.session.elapsed_fraction * (ceil(10 / max(1, providers.count)) * 11 - 1))",
+          "y": "5",
+          "width": "2",
+          "height": "13",
+          "content": {
+            "type": "fill",
+            "color": "#FFFFFFCC"
+          }
+        },
+        {
+          "id": "claude-session-pace-marker-light",
+          "name": "light 5-hour pace marker (elapsed position)",
+          "render": "(1 - system.dark)",
+          "parent": "claude-provider",
+          "x": "floor(claude.session.elapsed_fraction * (ceil(10 / max(1, providers.count)) * 11 - 1))",
+          "y": "5",
+          "width": "2",
+          "height": "13",
+          "content": {
+            "type": "fill",
+            "color": "#000000CC"
           }
         },
         {
@@ -695,7 +723,7 @@
         {
           "id": "claude-weekly-pace-green-dark",
           "name": "dark 7-day pace overlay (green — under pace)",
-          "render": "system.dark && claude.weekly.pace_delta < 0",
+          "render": "system.dark && claude.weekly.pace_delta < settings.pace_yellow",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -719,7 +747,7 @@
         {
           "id": "claude-weekly-pace-yellow-dark",
           "name": "dark 7-day pace overlay (yellow — on pace)",
-          "render": "system.dark && claude.weekly.pace_delta >= 0 && claude.weekly.pace_delta < 15",
+          "render": "system.dark && claude.weekly.pace_delta >= settings.pace_yellow && claude.weekly.pace_delta < settings.pace_orange",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -743,7 +771,7 @@
         {
           "id": "claude-weekly-pace-orange-dark",
           "name": "dark 7-day pace overlay (orange — over pace)",
-          "render": "system.dark && claude.weekly.pace_delta >= 15 && claude.weekly.pace_delta < 30",
+          "render": "system.dark && claude.weekly.pace_delta >= settings.pace_orange && claude.weekly.pace_delta < settings.pace_red",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -767,7 +795,7 @@
         {
           "id": "claude-weekly-pace-red-dark",
           "name": "dark 7-day pace overlay (red — way over pace)",
-          "render": "system.dark && claude.weekly.pace_delta >= 30",
+          "render": "system.dark && claude.weekly.pace_delta >= settings.pace_red",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -815,7 +843,7 @@
         {
           "id": "claude-weekly-pace-green-light",
           "name": "light 7-day pace overlay (green — under pace)",
-          "render": "(1 - system.dark) && claude.weekly.pace_delta < 0",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta < settings.pace_yellow",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -839,7 +867,7 @@
         {
           "id": "claude-weekly-pace-yellow-light",
           "name": "light 7-day pace overlay (yellow — on pace)",
-          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 0 && claude.weekly.pace_delta < 15",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= settings.pace_yellow && claude.weekly.pace_delta < settings.pace_orange",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -863,7 +891,7 @@
         {
           "id": "claude-weekly-pace-orange-light",
           "name": "light 7-day pace overlay (orange — over pace)",
-          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 15 && claude.weekly.pace_delta < 30",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= settings.pace_orange && claude.weekly.pace_delta < settings.pace_red",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -887,7 +915,7 @@
         {
           "id": "claude-weekly-pace-red-light",
           "name": "light 7-day pace overlay (red — way over pace)",
-          "render": "(1 - system.dark) && claude.weekly.pace_delta >= 30",
+          "render": "(1 - system.dark) && claude.weekly.pace_delta >= settings.pace_red",
           "parent": "claude-provider",
           "y": "28",
           "width": "ceil(10 / max(1, providers.count)) * 11 - 1",
@@ -906,6 +934,34 @@
             "segments": 10,
             "segments_expression": "ceil(10 / max(1, providers.count))",
             "segment_gap": "1"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-marker-dark",
+          "name": "dark 7-day pace marker (elapsed position)",
+          "render": "system.dark",
+          "parent": "claude-provider",
+          "x": "floor(claude.weekly.elapsed_fraction * (ceil(10 / max(1, providers.count)) * 11 - 1))",
+          "y": "28",
+          "width": "2",
+          "height": "13",
+          "content": {
+            "type": "fill",
+            "color": "#FFFFFFCC"
+          }
+        },
+        {
+          "id": "claude-weekly-pace-marker-light",
+          "name": "light 7-day pace marker (elapsed position)",
+          "render": "(1 - system.dark)",
+          "parent": "claude-provider",
+          "x": "floor(claude.weekly.elapsed_fraction * (ceil(10 / max(1, providers.count)) * 11 - 1))",
+          "y": "28",
+          "width": "2",
+          "height": "13",
+          "content": {
+            "type": "fill",
+            "color": "#000000CC"
           }
         },
         {
