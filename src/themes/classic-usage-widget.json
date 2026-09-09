@@ -679,7 +679,9 @@
           "height": "13",
           "content": {
             "type": "shape",
-            "fill": "#FFFFFFCC"
+            "fill": {
+              "color": "#FFFFFFCC"
+            }
           }
         },
         {
@@ -693,7 +695,9 @@
           "height": "13",
           "content": {
             "type": "shape",
-            "fill": "#000000CC"
+            "fill": {
+              "color": "#000000CC"
+            }
           }
         },
         {
@@ -947,7 +951,9 @@
           "height": "13",
           "content": {
             "type": "shape",
-            "fill": "#FFFFFFCC"
+            "fill": {
+              "color": "#FFFFFFCC"
+            }
           }
         },
         {
@@ -961,7 +967,9 @@
           "height": "13",
           "content": {
             "type": "shape",
-            "fill": "#000000CC"
+            "fill": {
+              "color": "#000000CC"
+            }
           }
         },
         {
