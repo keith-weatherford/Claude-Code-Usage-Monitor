@@ -121,6 +121,55 @@ impl StudioApp {
                     },
                 );
             });
+            section(ui, language.text("Pace thresholds"), |ui| {
+                setting_row(
+                    ui,
+                    language.text("Yellow (on pace)"),
+                    language.text("Pace delta where the bar turns yellow"),
+                    |ui| {
+                        changed |= ui
+                            .add(
+                                egui::DragValue::new(&mut self.settings.pace_yellow_threshold)
+                                    .speed(1.0)
+                                    .range(-100.0..=100.0)
+                                    .suffix("%"),
+                            )
+                            .changed();
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
+                    language.text("Orange (over pace)"),
+                    language.text("Pace delta where the bar turns orange"),
+                    |ui| {
+                        changed |= ui
+                            .add(
+                                egui::DragValue::new(&mut self.settings.pace_orange_threshold)
+                                    .speed(1.0)
+                                    .range(-100.0..=100.0)
+                                    .suffix("%"),
+                            )
+                            .changed();
+                    },
+                );
+                setting_separator(ui);
+                setting_row(
+                    ui,
+                    language.text("Red (way over)"),
+                    language.text("Pace delta where the bar turns red"),
+                    |ui| {
+                        changed |= ui
+                            .add(
+                                egui::DragValue::new(&mut self.settings.pace_red_threshold)
+                                    .speed(1.0)
+                                    .range(-100.0..=100.0)
+                                    .suffix("%"),
+                            )
+                            .changed();
+                    },
+                );
+            });
             section(ui, language.text("Appearance"), |ui| {
                 setting_row(
                     ui,
