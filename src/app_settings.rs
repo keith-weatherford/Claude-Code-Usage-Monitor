@@ -68,6 +68,16 @@ pub struct SettingsFile {
     pub pace_orange_threshold: f64,
     #[serde(default = "default_pace_red")]
     pub pace_red_threshold: f64,
+    #[serde(default)]
+    pub work_hours_enabled: bool,
+    #[serde(default = "default_work_hour_start")]
+    pub work_hour_start: u8,
+    #[serde(default = "default_work_hour_end")]
+    pub work_hour_end: u8,
+    #[serde(default = "default_weight")]
+    pub non_work_weight: f64,
+    #[serde(default = "default_weight")]
+    pub weekend_weight: f64,
 }
 
 impl Default for SettingsFile {
@@ -93,6 +103,11 @@ impl Default for SettingsFile {
             pace_yellow_threshold: default_pace_yellow(),
             pace_orange_threshold: default_pace_orange(),
             pace_red_threshold: default_pace_red(),
+            work_hours_enabled: false,
+            work_hour_start: default_work_hour_start(),
+            work_hour_end: default_work_hour_end(),
+            non_work_weight: default_weight(),
+            weekend_weight: default_weight(),
         }
     }
 }
@@ -122,6 +137,10 @@ impl SettingsFile {
         self.pace_yellow_threshold = self.pace_yellow_threshold.clamp(-100.0, 100.0);
         self.pace_orange_threshold = self.pace_orange_threshold.clamp(-100.0, 100.0);
         self.pace_red_threshold = self.pace_red_threshold.clamp(-100.0, 100.0);
+        self.work_hour_start = self.work_hour_start.min(23);
+        self.work_hour_end = self.work_hour_end.min(23);
+        self.non_work_weight = self.non_work_weight.clamp(0.0, 2.0);
+        self.weekend_weight = self.weekend_weight.clamp(0.0, 2.0);
     }
 
     pub fn legacy_placement(&self) -> Option<LegacyPlacement> {
@@ -343,6 +362,15 @@ fn default_pace_orange() -> f64 {
 }
 fn default_pace_red() -> f64 {
     30.0
+}
+fn default_work_hour_start() -> u8 {
+    7
+}
+fn default_work_hour_end() -> u8 {
+    19
+}
+fn default_weight() -> f64 {
+    1.0
 }
 fn valid_dashboard_dimension(value: Option<f32>) -> Option<f32> {
     value.filter(|value| value.is_finite() && (64.0..=16_384.0).contains(value))
