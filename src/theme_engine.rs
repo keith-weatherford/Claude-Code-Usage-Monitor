@@ -1192,7 +1192,7 @@ pub struct DataContext {
 /// Runtime environment used by theme expressions and layout. Provider state is
 /// deliberately independent of polling availability so a temporary provider
 /// error never causes the widget to jump or resize.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ThemeRuntime {
     providers: ProviderSet,
     pub poll_ok: bool,
@@ -1200,6 +1200,9 @@ pub struct ThemeRuntime {
     pub language: LanguageId,
     host_width: u32,
     host_height: u32,
+    pub pace_yellow: f64,
+    pub pace_orange: f64,
+    pub pace_red: f64,
 }
 
 impl Default for ThemeRuntime {
@@ -1211,6 +1214,9 @@ impl Default for ThemeRuntime {
             language: LanguageId::English,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
+            pace_yellow: 0.0,
+            pace_orange: 15.0,
+            pace_red: 30.0,
         }
     }
 }
@@ -1238,6 +1244,9 @@ impl ThemeRuntime {
             language: LanguageId::English,
             host_width: default_canvas_width(),
             host_height: default_canvas_height(),
+            pace_yellow: 0.0,
+            pace_orange: 15.0,
+            pace_red: 30.0,
         }
     }
 
@@ -1249,6 +1258,13 @@ impl ThemeRuntime {
 
     pub fn with_language(mut self, language: LanguageId) -> Self {
         self.language = language;
+        self
+    }
+
+    pub fn with_pace_thresholds(mut self, yellow: f64, orange: f64, red: f64) -> Self {
+        self.pace_yellow = yellow;
+        self.pace_orange = orange;
+        self.pace_red = red;
         self
     }
 
@@ -1316,6 +1332,9 @@ impl DataContext {
         context.insert_string("i18n.minute_suffix", strings.minute_suffix);
         context.insert_string("i18n.second_suffix", strings.second_suffix);
         context.insert("providers.count", runtime.provider_count() as f64);
+        context.insert("settings.pace_yellow", runtime.pace_yellow);
+        context.insert("settings.pace_orange", runtime.pace_orange);
+        context.insert("settings.pace_red", runtime.pace_red);
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|value| value.as_secs_f64())
