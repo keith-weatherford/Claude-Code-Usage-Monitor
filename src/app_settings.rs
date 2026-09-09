@@ -62,6 +62,12 @@ pub struct SettingsFile {
     pub dashboard_width: Option<f32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub dashboard_height: Option<f32>,
+    #[serde(default = "default_pace_yellow")]
+    pub pace_yellow_threshold: f64,
+    #[serde(default = "default_pace_orange")]
+    pub pace_orange_threshold: f64,
+    #[serde(default = "default_pace_red")]
+    pub pace_red_threshold: f64,
 }
 
 impl Default for SettingsFile {
@@ -84,6 +90,9 @@ impl Default for SettingsFile {
             active_theme_path: None,
             dashboard_width: None,
             dashboard_height: None,
+            pace_yellow_threshold: default_pace_yellow(),
+            pace_orange_threshold: default_pace_orange(),
+            pace_red_threshold: default_pace_red(),
         }
     }
 }
@@ -110,6 +119,9 @@ impl SettingsFile {
         self.custom_theme_enabled = true;
         self.dashboard_width = valid_dashboard_dimension(self.dashboard_width);
         self.dashboard_height = valid_dashboard_dimension(self.dashboard_height);
+        self.pace_yellow_threshold = self.pace_yellow_threshold.clamp(-100.0, 100.0);
+        self.pace_orange_threshold = self.pace_orange_threshold.clamp(-100.0, 100.0);
+        self.pace_red_threshold = self.pace_red_threshold.clamp(-100.0, 100.0);
     }
 
     pub fn legacy_placement(&self) -> Option<LegacyPlacement> {
@@ -322,6 +334,15 @@ fn default_poll_interval() -> u32 {
 }
 fn default_true() -> bool {
     true
+}
+fn default_pace_yellow() -> f64 {
+    0.0
+}
+fn default_pace_orange() -> f64 {
+    15.0
+}
+fn default_pace_red() -> f64 {
+    30.0
 }
 fn valid_dashboard_dimension(value: Option<f32>) -> Option<f32> {
     value.filter(|value| value.is_finite() && (64.0..=16_384.0).contains(value))
