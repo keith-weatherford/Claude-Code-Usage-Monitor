@@ -33,6 +33,13 @@ impl StudioApp {
                                         self.settings.pace_orange_threshold,
                                         self.settings.pace_red_threshold,
                                     )
+                                    .with_pacing_schedule(
+                                        self.settings.work_hours_enabled,
+                                        self.settings.work_hour_start,
+                                        self.settings.work_hour_end,
+                                        self.settings.non_work_weight,
+                                        self.settings.weekend_weight,
+                                    )
     }
 
     pub(super) fn theme_runtime_for_surface(&self, surface_index: usize) -> ThemeRuntime {
