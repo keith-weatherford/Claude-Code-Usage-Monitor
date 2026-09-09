@@ -170,6 +170,95 @@ impl StudioApp {
                     },
                 );
             });
+            section(ui, language.text("Pacing schedule"), |ui| {
+                setting_row(
+                    ui,
+                    language.text("Enable work hours"),
+                    language.text("Weight pace by time of day"),
+                    |ui| {
+                        changed |= Toggle::new(&mut self.settings.work_hours_enabled)
+                            .labels(language.text("Enabled"), language.text("Disabled"))
+                            .show(ui)
+                            .changed();
+                    },
+                );
+                if self.settings.work_hours_enabled {
+                    setting_separator(ui);
+                    setting_row(
+                        ui,
+                        language.text("Work hours start"),
+                        language.text("Hour when work time begins (0â23)"),
+                        |ui| {
+                            let mut value = self.settings.work_hour_start as f64;
+                            if ui
+                                .add(
+                                    egui::DragValue::new(&mut value)
+                                        .speed(1.0)
+                                        .range(0.0..=23.0)
+                                        .suffix("h"),
+                                )
+                                .changed()
+                            {
+                                self.settings.work_hour_start = value as u8;
+                                changed = true;
+                            }
+                        },
+                    );
+                    setting_separator(ui);
+                    setting_row(
+                        ui,
+                        language.text("Work hours end"),
+                        language.text("Hour when work time ends (0â23)"),
+                        |ui| {
+                            let mut value = self.settings.work_hour_end as f64;
+                            if ui
+                                .add(
+                                    egui::DragValue::new(&mut value)
+                                        .speed(1.0)
+                                        .range(0.0..=23.0)
+                                        .suffix("h"),
+                                )
+                                .changed()
+                            {
+                                self.settings.work_hour_end = value as u8;
+                                changed = true;
+                            }
+                        },
+                    );
+                    setting_separator(ui);
+                    setting_row(
+                        ui,
+                        language.text("Off-hours weight"),
+                        language.text("Weekday non-work hours (0 = ignore, 1 = full)"),
+                        |ui| {
+                            changed |= ui
+                                .add(
+                                    egui::DragValue::new(&mut self.settings.non_work_weight)
+                                        .speed(0.05)
+                                        .range(0.0..=2.0)
+                                        .fixed_decimals(2),
+                                )
+                                .changed();
+                        },
+                    );
+                }
+                setting_separator(ui);
+                setting_row(
+                    ui,
+                    language.text("Weekend weight"),
+                    language.text("Saturday & Sunday (0 = ignore, 1 = full)"),
+                    |ui| {
+                        changed |= ui
+                            .add(
+                                egui::DragValue::new(&mut self.settings.weekend_weight)
+                                    .speed(0.05)
+                                    .range(0.0..=2.0)
+                                    .fixed_decimals(2),
+                            )
+                            .changed();
+                    },
+                );
+            });
             section(ui, language.text("Appearance"), |ui| {
                 setting_row(
                     ui,
