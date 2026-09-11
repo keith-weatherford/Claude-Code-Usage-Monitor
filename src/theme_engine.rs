@@ -1685,6 +1685,7 @@ impl DataContext {
             };
 
             if crate::diagnose::is_enabled() && name == "claude" {
+                let weighted_path = use_weighted && (window == "weekly" || window == "monthly") && reset_unix > 0.0;
                 let linear = (1.0 - (secs_left / total_secs)).clamp(0.0, 1.0);
                 crate::diagnose::log(format!(
                     "pace: {name}.{window} weighted_path={weighted_path} \
