@@ -471,6 +471,13 @@ fn theme_runtime_from_state(state: &AppState) -> ThemeRuntime {
             state.pace_orange_threshold,
             state.pace_red_threshold,
         )
+        .with_pacing_schedule(
+            state.work_hours_enabled,
+            state.work_hour_start,
+            state.work_hour_end,
+            state.non_work_weight,
+            state.weekend_weight,
+        )
 }
 
 /// A transient outage can keep presenting the last real reading while its
