@@ -1649,6 +1649,18 @@ impl DataContext {
             FIVE_HOUR_SECS
         };
         let use_weighted = runtime.weekend_weight != 1.0 || runtime.work_hours_enabled;
+        if crate::diagnose::is_enabled() && name == "claude" {
+            crate::diagnose::log(format!(
+                "pace: use_weighted={use_weighted} work_hours_enabled={} \
+                 start={} end={} non_work={:.2} weekend={:.2} \
+                 weekly_reset_unix={weekly_unix:.0} weekly_secs_left={weekly_seconds:.0}",
+                runtime.work_hours_enabled,
+                runtime.work_hour_start,
+                runtime.work_hour_end,
+                runtime.non_work_weight,
+                runtime.weekend_weight,
+            ));
+        }
         for (window, total_secs, reset_unix, secs_left, pct) in [
             ("session", session_total, session_unix, session_seconds, session),
             ("five_hour", FIVE_HOUR_SECS, five_hour_unix, five_hour_seconds, five_hour),
@@ -1671,6 +1683,16 @@ impl DataContext {
             } else {
                 0.0
             };
+
+            if crate::diagnose::is_enabled() && name == "claude" {
+                let linear = (1.0 - (secs_left / total_secs)).clamp(0.0, 1.0);
+                crate::diagnose::log(format!(
+                    "pace: {name}.{window} weighted_path={weighted_path} \
+                     reset_unix={reset_unix:.0} secs_left={secs_left:.0} pct={pct:.1} \
+                     linear_elapsed={linear:.4} elapsed={elapsed:.4} \
+                     expected={expected:.1} delta={delta:+.1}",
+                ));
+            }
 
             self.insert(&format!("{name}.{window}.elapsed_fraction"), elapsed);
             self.insert(&format!("{name}.{window}.expected_percentage"), expected);
